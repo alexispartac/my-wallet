@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>MoneyFlow — Handoff tehnic Next.js + MongoDB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #FAFAF7;
+  --paper: #fff;
+  --ink: #0F172A;
+  --ink2: #334155;
+  --mute: #64748B;
+  --line: #E5E5E0;
+  --line2: #F1F5F9;
+  --blue: #2563EB;
+  --green: #16A34A;
+  --orange: #EA580C;
+  --red: #DC2626;
+  --code-bg: #0F172A;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+aside {
+  border-right: 1px solid var(--line);
+  padding: 32px 24px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+aside .brand {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 28px;
+}
+aside .brand-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #1A3C5E, #2563EB);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 18px;
+}
+aside h4 {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--mute); margin: 24px 0 8px;
+  font-weight: 700;
+}
+aside h4:first-of-type { margin-top: 0; }
+aside ul { list-style: none; padding: 0; margin: 0; }
+aside li a {
+  display: block; padding: 5px 8px; margin: 0 -8px;
+  border-radius: 6px;
+  color: var(--ink2); text-decoration: none;
+  font-size: 13px; font-weight: 500;
+  transition: background 120ms;
+}
+aside li a:hover { background: var(--line2); color: var(--ink); }
+aside .badge {
+  display: inline-block; padding: 1px 6px; border-radius: 4px;
+  background: #DBEAFE; color: #1E40AF;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.4px;
+  margin-left: 6px; vertical-align: middle;
+}
+
+main { padding: 56px 64px 100px; max-width: 880px; }
+
+.cover { border-bottom: 1px solid var(--line); padding-bottom: 36px; margin-bottom: 40px; }
+.cover .eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--blue);
+}
+.cover h1 {
+  font-size: 44px; font-weight: 800; letter-spacing: -1.2px;
+  margin: 8px 0 12px; line-height: 1.05;
+}
+.cover .sub { font-size: 17px; color: var(--mute); max-width: 540px; }
+.cover .meta {
+  display: flex; gap: 24px; margin-top: 24px;
+  font-size: 12px; font-family: 'JetBrains Mono', monospace;
+  color: var(--mute);
+}
+.cover .meta b { color: var(--ink); font-weight: 600; }
+
+h2 {
+  font-size: 26px; font-weight: 700; letter-spacing: -0.5px;
+  margin: 48px 0 8px;
+  padding-top: 24px; border-top: 1px solid var(--line);
+}
+h2 .num {
+  display: inline-block; min-width: 38px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; color: var(--mute); font-weight: 500;
+  vertical-align: middle;
+}
+h2:first-of-type { border-top: none; padding-top: 0; }
+h3 {
+  font-size: 17px; font-weight: 700;
+  margin: 28px 0 8px;
+  letter-spacing: -0.2px;
+}
+p { margin: 8px 0; color: var(--ink2); }
+.lead { font-size: 16px; color: var(--ink2); margin-bottom: 12px; }
+ul.bullets { padding-left: 18px; color: var(--ink2); }
+ul.bullets li { margin: 4px 0; }
+
+pre {
+  background: var(--code-bg);
+  color: #E2E8F0;
+  padding: 18px 20px;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 14px 0;
+}
+pre .k { color: #C084FC; }
+pre .s { color: #86EFAC; }
+pre .c { color: #64748B; font-style: italic; }
+pre .n { color: #FBBF24; }
+pre .f { color: #93C5FD; }
+pre .v { color: #FDA4AF; }
+pre .t { color: #5EEAD4; }
+code.inline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+  background: var(--line2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--blue);
+  font-weight: 500;
+}
+
+.tree {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 14px 0;
+  line-height: 1.85;
+  color: var(--ink2);
+}
+.tree .folder { color: var(--blue); font-weight: 600; }
+.tree .file { color: var(--ink); }
+.tree .comment { color: var(--mute); font-style: italic; margin-left: 16px; }
+
+.callout {
+  display: flex; gap: 14px;
+  background: var(--paper); border-radius: 12px;
+  padding: 14px 16px; margin: 16px 0;
+  border-left: 4px solid var(--blue);
+  border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.callout.warn { border-left-color: var(--orange); }
+.callout.ok { border-left-color: var(--green); }
+.callout .ico {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+  background: #DBEAFE; color: var(--blue);
+}
+.callout.warn .ico { background: #FFEDD5; color: var(--orange); }
+.callout.ok .ico { background: #DCFCE7; color: var(--green); }
+.callout .body { flex: 1; font-size: 13px; color: var(--ink2); }
+.callout .body b { color: var(--ink); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.card {
+  background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px;
+}
+.card .label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--mute); margin-bottom: 4px;
+}
+.card .name { font-size: 15px; font-weight: 700; color: var(--ink); }
+.card .desc { font-size: 12px; color: var(--mute); margin-top: 2px; }
+
+table {
+  width: 100%; border-collapse: collapse; margin: 14px 0;
+  font-size: 13px;
+}
+table th, table td {
+  text-align: left; padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+table th {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--mute);
+  background: var(--paper);
+}
+table td { color: var(--ink2); vertical-align: top; }
+table td code.inline { white-space: nowrap; }
+
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+  background: var(--line2); color: var(--ink2);
+  margin-right: 4px;
+}
+.tag.blue { background: #DBEAFE; color: #1E40AF; }
+.tag.green { background: #DCFCE7; color: #166534; }
+.tag.orange { background: #FFEDD5; color: #9A3412; }
+.tag.purple { background: #EDE9FE; color: #5B21B6; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  aside { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 24px; }
+  main { padding: 32px 24px 60px; }
+  .grid2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside>
+  <div class="brand">
+    <div class="brand-icon">M</div>
+    <div>
+      <div style="font-weight:700; font-size:14px">MoneyFlow</div>
+      <div style="font-size:11px; color:var(--mute)">Tech Handoff</div>
+    </div>
+  </div>
+
+  <h4>Architecture</h4>
+  <ul>
+    <li><a href="#stack">1. Stack & Decizii</a></li>
+    <li><a href="#structure">2. Structură foldere</a></li>
+    <li><a href="#env">3. Environment</a></li>
+  </ul>
+
+  <h4>Database</h4>
+  <ul>
+    <li><a href="#schemas">4. Mongoose schemas</a></li>
+    <li><a href="#indexes">5. Indexes</a></li>
+    <li><a href="#aggregations">6. Agregări</a></li>
+  </ul>
+
+  <h4>API</h4>
+  <ul>
+    <li><a href="#routes">7. Route handlers</a></li>
+    <li><a href="#auth">8. Auth <span class="badge">NextAuth</span></a></li>
+    <li><a href="#validation">9. Validare Zod</a></li>
+  </ul>
+
+  <h4>Client</h4>
+  <ul>
+    <li><a href="#mapping">10. Component mapping</a></li>
+    <li><a href="#fetching">11. Data fetching</a></li>
+    <li><a href="#tokens">12. Design tokens</a></li>
+  </ul>
+
+  <h4>Ops</h4>
+  <ul>
+    <li><a href="#roadmap">13. Roadmap & Phases</a></li>
+    <li><a href="#deploy">14. Deploy</a></li>
+  </ul>
+</aside>
+
+<main>
+  <div class="cover">
+    <div class="eyebrow">Engineering Handoff · v1.0</div>
+    <h1>MoneyFlow Backend & Implementation Spec</h1>
+    <div class="sub">Plan complet de implementare pentru Next.js 15 (App Router) + MongoDB + Mongoose. Bazat pe prototipul vizual livrat.</div>
+    <div class="meta">
+      <div>STACK <b style="color:var(--ink)">Next.js 15 · Mongo 7</b></div>
+      <div>OWNER <b>Andrei P.</b></div>
+      <div>STATUS <b style="color:var(--green)">Ready to build</b></div>
+    </div>
+  </div>
+
+  <!-- ─── 1. Stack ─────────────────────────────────────────── -->
+  <h2 id="stack"><span class="num">01</span>Stack & Decizii</h2>
+  <p class="lead">Selectăm un stack minim, "boring", optimizat pentru livrare rapidă a MVP-ului. Fără frameworkuri exotice.</p>
+
+  <table>
+    <tr><th>Strat</th><th>Tehnologie</th><th>De ce</th></tr>
+    <tr><td>Framework</td><td><code class="inline">Next.js 15</code> (App Router)</td><td>SSR/RSC pentru dashboard, API routes integrate, deploy pe Vercel trivial.</td></tr>
+    <tr><td>Runtime</td><td><code class="inline">Node 20 LTS</code></td><td>Mongoose are nevoie de Node runtime (nu Edge).</td></tr>
+    <tr><td>DB</td><td><code class="inline">MongoDB Atlas</code> M0 → M10</td><td>Free tier pentru dev, scale-out simplu. Schema flexibilă pentru categorii custom.</td></tr>
+    <tr><td>ORM</td><td><code class="inline">Mongoose 8</code></td><td>Schema validation + middleware + lean queries.</td></tr>
+    <tr><td>Auth</td><td><code class="inline">Auth.js (NextAuth v5)</code></td><td>Email magic-link + Google OAuth. JWT sessions.</td></tr>
+    <tr><td>Validation</td><td><code class="inline">Zod</code></td><td>End-to-end type safety client↔server.</td></tr>
+    <tr><td>UI</td><td><code class="inline">React 19</code> + <code class="inline">Tailwind v4</code></td><td>Tailwind oklch pentru paleta PRD. Componente custom (vezi prototip).</td></tr>
+    <tr><td>State</td><td><code class="inline">SWR</code> sau <code class="inline">React Query</code></td><td>Cache + revalidate pentru tranzacții.</td></tr>
+    <tr><td>Charts</td><td><code class="inline">Recharts</code> sau custom SVG</td><td>Prototipul folosește SVG inline → portabil 1:1.</td></tr>
+    <tr><td>Forms</td><td><code class="inline">React Hook Form</code> + Zod</td><td>Validare pe client + server cu același schema.</td></tr>
+  </table>
+
+  <div class="callout">
+    <div class="ico">i</div>
+    <div class="body"><b>Cheat code:</b> dacă vrei "even more boring", înlocuiește Mongoose cu <code class="inline">drizzle + Postgres</code>. Dar pentru un app personal cu schemă fluidă, Mongo e mai ok.</div>
+  </div>
+
+  <!-- ─── 2. Structure ─────────────────────────────────────── -->
+  <h2 id="structure"><span class="num">02</span>Structură foldere</h2>
+  <p>Layout Next.js App Router cu separare clară între <b>API</b>, <b>DB</b>, <b>UI</b> și <b>logic</b>:</p>
+
+  <div class="tree">
+<span class="folder">moneyflow/</span>
+├── <span class="folder">app/</span>                            <span class="comment"># App Router</span>
+│   ├── <span class="folder">(auth)/</span>
+│   │   ├── <span class="folder">login/</span>page.tsx
+│   │   └── <span class="folder">register/</span>page.tsx
+│   ├── <span class="folder">(app)/</span>                       <span class="comment"># protected layout</span>
+│   │   ├── layout.tsx               <span class="comment"># sidebar + auth check</span>
+│   │   ├── dashboard/page.tsx
+│   │   ├── transactions/page.tsx
+│   │   ├── budget/page.tsx
+│   │   ├── reports/page.tsx
+│   │   └── settings/page.tsx
+│   ├── <span class="folder">api/</span>
+│   │   ├── <span class="folder">auth/</span>[...nextauth]/route.ts
+│   │   ├── <span class="folder">transactions/</span>
+│   │   │   ├── route.ts            <span class="comment"># GET list, POST create</span>
+│   │   │   └── [id]/route.ts       <span class="comment"># GET, PATCH, DELETE</span>
+│   │   ├── <span class="folder">budgets/</span>
+│   │   │   ├── route.ts
+│   │   │   └── [id]/route.ts
+│   │   ├── <span class="folder">categories/</span>route.ts
+│   │   ├── <span class="folder">reports/</span>
+│   │   │   ├── monthly/route.ts    <span class="comment"># aggregation</span>
+│   │   │   └── timeline/route.ts
+│   │   └── <span class="folder">export/</span>route.ts          <span class="comment"># CSV/PDF</span>
+│   ├── layout.tsx
+│   └── globals.css
+├── <span class="folder">components/</span>
+│   ├── <span class="folder">ui/</span>                          <span class="comment"># primitives (Button, Card, ProgressBar)</span>
+│   ├── <span class="folder">charts/</span>                      <span class="comment"># DonutChart, LineChart</span>
+│   ├── <span class="folder">transactions/</span>
+│   │   ├── TransactionList.tsx
+│   │   ├── TransactionRow.tsx
+│   │   └── AddTransactionSheet.tsx
+│   ├── <span class="folder">budget/</span>
+│   └── <span class="folder">dashboard/</span>
+├── <span class="folder">lib/</span>
+│   ├── <span class="folder">db/</span>
+│   │   ├── connect.ts              <span class="comment"># cached connection</span>
+│   │   └── <span class="folder">models/</span>
+│   │       ├── User.ts
+│   │       ├── Category.ts
+│   │       ├── Transaction.ts
+│   │       └── Budget.ts
+│   ├── <span class="folder">auth/</span>
+│   │   └── config.ts
+│   ├── <span class="folder">validation/</span>
+│   │   └── schemas.ts              <span class="comment"># Zod</span>
+│   └── utils.ts
+├── <span class="folder">hooks/</span>
+│   ├── useTransactions.ts
+│   ├── useBudget.ts
+│   └── useReports.ts
+├── <span class="folder">styles/</span>
+│   └── tokens.css                  <span class="comment"># oklch palette</span>
+├── .env.local
+├── middleware.ts                    <span class="comment"># protect (app)/*</span>
+├── next.config.ts
+└── package.json
+  </div>
+
+  <!-- ─── 3. Env ─────────────────────────────────────────── -->
+  <h2 id="env"><span class="num">03</span>Environment</h2>
+<pre><span class="c"># .env.local</span>
+MONGODB_URI=<span class="s">"mongodb+srv://user:pass@cluster.mongodb.net/moneyflow?retryWrites=true"</span>
+NEXTAUTH_SECRET=<span class="s">"openssl rand -base64 32"</span>
+NEXTAUTH_URL=<span class="s">"http://localhost:3000"</span>
+GOOGLE_CLIENT_ID=<span class="s">"..."</span>
+GOOGLE_CLIENT_SECRET=<span class="s">"..."</span>
+RESEND_API_KEY=<span class="s">"re_..."</span>  <span class="c"># pentru magic link</span></pre>
+
+  <!-- ─── 4. Schemas ─────────────────────────────────────── -->
+  <h2 id="schemas"><span class="num">04</span>Mongoose Schemas</h2>
+  <p class="lead">4 colecții. Toate au <code class="inline">userId</code> indexat — multi-tenant safe by default.</p>
+
+  <h3>User</h3>
+<pre><span class="c">// lib/db/models/User.ts</span>
+<span class="k">import</span> mongoose, { Schema, model, models } <span class="k">from</span> <span class="s">"mongoose"</span>;
+
+<span class="k">const</span> <span class="f">UserSchema</span> = <span class="k">new</span> Schema({
+  email:       { <span class="t">type</span>: String, required: <span class="n">true</span>, unique: <span class="n">true</span>, lowercase: <span class="n">true</span> },
+  name:        { <span class="t">type</span>: String },
+  image:       { <span class="t">type</span>: String },
+  <span class="c">// onboarding</span>
+  monthlyIncome:    { <span class="t">type</span>: Number, default: <span class="n">0</span> },
+  budgetTemplate:   { <span class="t">type</span>: String, enum: [<span class="s">"50-30-20"</span>, <span class="s">"conservator"</span>, <span class="s">"custom"</span>] },
+  onboardingDone:   { <span class="t">type</span>: Boolean, default: <span class="n">false</span> },
+  <span class="c">// preferences</span>
+  currency:    { <span class="t">type</span>: String, default: <span class="s">"RON"</span> },
+  locale:      { <span class="t">type</span>: String, default: <span class="s">"ro-RO"</span> },
+  theme:       { <span class="t">type</span>: String, enum: [<span class="s">"light"</span>, <span class="s">"dark"</span>, <span class="s">"system"</span>], default: <span class="s">"light"</span> },
+}, { timestamps: <span class="n">true</span> });
+
+<span class="k">export default</span> models.User || model(<span class="s">"User"</span>, UserSchema);</pre>
+
+  <h3>Category</h3>
+<pre><span class="c">// lib/db/models/Category.ts</span>
+<span class="k">const</span> <span class="f">CategorySchema</span> = <span class="k">new</span> Schema({
+  userId:      { <span class="t">type</span>: Schema.Types.ObjectId, ref: <span class="s">"User"</span>, required: <span class="n">true</span>, index: <span class="n">true</span> },
+  name:        { <span class="t">type</span>: String, required: <span class="n">true</span> },     <span class="c">// "Mâncare"</span>
+  slug:        { <span class="t">type</span>: String, required: <span class="n">true</span> },     <span class="c">// "food"</span>
+  icon:        { <span class="t">type</span>: String, default: <span class="s">"💰"</span> },     <span class="c">// emoji sau Lucide name</span>
+  color:       { <span class="t">type</span>: String, default: <span class="s">"#2563EB"</span> },
+  kind:        { <span class="t">type</span>: String, enum: [<span class="s">"expense"</span>, <span class="s">"income"</span>], default: <span class="s">"expense"</span> },
+  archived:    { <span class="t">type</span>: Boolean, default: <span class="n">false</span> },
+  isDefault:   { <span class="t">type</span>: Boolean, default: <span class="n">false</span> },  <span class="c">// seedată la onboarding</span>
+}, { timestamps: <span class="n">true</span> });
+
+CategorySchema.index({ userId: <span class="n">1</span>, slug: <span class="n">1</span> }, { unique: <span class="n">true</span> });</pre>
+
+  <h3>Transaction</h3>
+<pre><span class="c">// lib/db/models/Transaction.ts</span>
+<span class="k">const</span> <span class="f">TransactionSchema</span> = <span class="k">new</span> Schema({
+  userId:      { <span class="t">type</span>: Schema.Types.ObjectId, ref: <span class="s">"User"</span>, required: <span class="n">true</span>, index: <span class="n">true</span> },
+  type:        { <span class="t">type</span>: String, enum: [<span class="s">"income"</span>, <span class="s">"expense"</span>], required: <span class="n">true</span> },
+  amount:      { <span class="t">type</span>: Number, required: <span class="n">true</span>, min: <span class="n">0</span> },  <span class="c">// stocăm pozitiv</span>
+  currency:    { <span class="t">type</span>: String, default: <span class="s">"RON"</span> },
+  categoryId:  { <span class="t">type</span>: Schema.Types.ObjectId, ref: <span class="s">"Category"</span>, required: <span class="n">true</span> },
+  merchant:    { <span class="t">type</span>: String, required: <span class="n">true</span>, trim: <span class="n">true</span> },
+  note:        { <span class="t">type</span>: String, default: <span class="s">""</span> },
+  date:        { <span class="t">type</span>: Date, required: <span class="n">true</span>, index: <span class="n">true</span> },
+  <span class="c">// pentru recurente (Faza 4)</span>
+  recurringId: { <span class="t">type</span>: Schema.Types.ObjectId, ref: <span class="s">"RecurringRule"</span>, default: <span class="n">null</span> },
+}, { timestamps: <span class="n">true</span> });
+
+<span class="c">// Compound index — toate query-urile importante filtrează userId+date</span>
+TransactionSchema.index({ userId: <span class="n">1</span>, date: <span class="n">-1</span> });
+TransactionSchema.index({ userId: <span class="n">1</span>, categoryId: <span class="n">1</span>, date: <span class="n">-1</span> });</pre>
+
+  <h3>Budget</h3>
+<pre><span class="c">// lib/db/models/Budget.ts</span>
+<span class="k">const</span> <span class="f">BudgetSchema</span> = <span class="k">new</span> Schema({
+  userId:      { <span class="t">type</span>: Schema.Types.ObjectId, ref: <span class="s">"User"</span>, required: <span class="n">true</span>, index: <span class="n">true</span> },
+  categoryId:  { <span class="t">type</span>: Schema.Types.ObjectId, ref: <span class="s">"Category"</span>, required: <span class="n">true</span> },
+  amount:      { <span class="t">type</span>: Number, required: <span class="n">true</span>, min: <span class="n">0</span> },
+  <span class="c">// per-lună (YYYY-MM). null = recurrent default.</span>
+  period:      { <span class="t">type</span>: String, default: <span class="n">null</span> },   <span class="c">// "2026-05"</span>
+  alertThreshold: { <span class="t">type</span>: Number, default: <span class="n">0.8</span> },  <span class="c">// 80%</span>
+}, { timestamps: <span class="n">true</span> });
+
+BudgetSchema.index({ userId: <span class="n">1</span>, categoryId: <span class="n">1</span>, period: <span class="n">1</span> }, { unique: <span class="n">true</span> });</pre>
+
+  <div class="callout warn">
+    <div class="ico">!</div>
+    <div class="body"><b>De ce <code class="inline">amount</code> stocat pozitiv</b> + <code class="inline">type</code>: face agregările simple (<code class="inline">$sum: "$amount"</code> filtrat pe type), nu trebuie să normalizezi semnele.</div>
+  </div>
+
+  <h3>Connection (singleton cached)</h3>
+<pre><span class="c">// lib/db/connect.ts</span>
+<span class="k">import</span> mongoose <span class="k">from</span> <span class="s">"mongoose"</span>;
+
+<span class="k">const</span> MONGODB_URI = process.env.MONGODB_URI!;
+
+<span class="c">// Cache între hot reloads (Next dev) și warm starts (Vercel)</span>
+<span class="k">let</span> cached = (global <span class="k">as any</span>).mongoose ?? { conn: <span class="n">null</span>, promise: <span class="n">null</span> };
+
+<span class="k">export async function</span> <span class="f">connectDB</span>() {
+  <span class="k">if</span> (cached.conn) <span class="k">return</span> cached.conn;
+  <span class="k">if</span> (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI, { bufferCommands: <span class="n">false</span> });
+  }
+  cached.conn = <span class="k">await</span> cached.promise;
+  (global <span class="k">as any</span>).mongoose = cached;
+  <span class="k">return</span> cached.conn;
+}</pre>
+
+  <!-- ─── 5. Indexes ─────────────────────────────────────── -->
+  <h2 id="indexes"><span class="num">05</span>Indexes (critic pentru performanță)</h2>
+  <table>
+    <tr><th>Colecție</th><th>Index</th><th>Pentru</th></tr>
+    <tr><td>transactions</td><td><code class="inline">{ userId: 1, date: -1 }</code></td><td>List paginat, filter pe lună</td></tr>
+    <tr><td>transactions</td><td><code class="inline">{ userId: 1, categoryId: 1, date: -1 }</code></td><td>Filtrare per categorie, top-categories</td></tr>
+    <tr><td>transactions</td><td><code class="inline">{ userId: 1, type: 1, date: -1 }</code></td><td>Sum venituri vs cheltuieli</td></tr>
+    <tr><td>budgets</td><td><code class="inline">{ userId, categoryId, period }</code> unique</td><td>1 buget / categorie / lună</td></tr>
+    <tr><td>categories</td><td><code class="inline">{ userId, slug }</code> unique</td><td>Slug unic per user</td></tr>
+  </table>
+
+  <!-- ─── 6. Aggregations ─────────────────────────────────── -->
+  <h2 id="aggregations"><span class="num">06</span>Agregări — Pipelines cheie</h2>
+
+  <h3>Dashboard summary (sold + venituri + cheltuieli pe luna curentă)</h3>
+<pre><span class="k">async function</span> <span class="f">getMonthSummary</span>(userId: ObjectId, period: <span class="t">string</span>) {
+  <span class="k">const</span> [year, month] = period.split(<span class="s">"-"</span>).map(Number);
+  <span class="k">const</span> start = <span class="k">new</span> Date(year, month - <span class="n">1</span>, <span class="n">1</span>);
+  <span class="k">const</span> end   = <span class="k">new</span> Date(year, month, <span class="n">1</span>);
+
+  <span class="k">const</span> result = <span class="k">await</span> Transaction.aggregate([
+    { $match: { userId, date: { $gte: start, $lt: end } } },
+    { $group: {
+        _id: <span class="s">"$type"</span>,
+        total: { $sum: <span class="s">"$amount"</span> },
+        count: { $sum: <span class="n">1</span> },
+    }},
+  ]);
+
+  <span class="k">const</span> income  = result.find(r =&gt; r._id === <span class="s">"income"</span>)?.total ?? <span class="n">0</span>;
+  <span class="k">const</span> expense = result.find(r =&gt; r._id === <span class="s">"expense"</span>)?.total ?? <span class="n">0</span>;
+  <span class="k">return</span> { income, expense, balance: income - expense };
+}</pre>
+
+  <h3>Spend by category (pentru donut chart)</h3>
+<pre><span class="k">async function</span> <span class="f">getSpendByCategory</span>(userId: ObjectId, period: <span class="t">string</span>) {
+  <span class="k">const</span> { start, end } = monthRange(period);
+
+  <span class="k">return</span> Transaction.aggregate([
+    { $match: { userId, type: <span class="s">"expense"</span>, date: { $gte: start, $lt: end } } },
+    { $group: { _id: <span class="s">"$categoryId"</span>, total: { $sum: <span class="s">"$amount"</span> } } },
+    { $lookup: {
+        <span class="t">from</span>: <span class="s">"categories"</span>, localField: <span class="s">"_id"</span>,
+        foreignField: <span class="s">"_id"</span>, as: <span class="s">"category"</span>,
+    }},
+    { $unwind: <span class="s">"$category"</span> },
+    { $project: {
+        categoryId: <span class="s">"$_id"</span>, name: <span class="s">"$category.name"</span>,
+        icon: <span class="s">"$category.icon"</span>, color: <span class="s">"$category.color"</span>,
+        total: <span class="n">1</span>,
+    }},
+    { $sort: { total: <span class="n">-1</span> } },
+  ]);
+}</pre>
+
+  <h3>Timeline 6 luni (pentru line chart)</h3>
+<pre><span class="k">async function</span> <span class="f">get6MonthTimeline</span>(userId: ObjectId) {
+  <span class="k">const</span> start = startOfMonth(subMonths(<span class="k">new</span> Date(), <span class="n">5</span>));
+
+  <span class="k">return</span> Transaction.aggregate([
+    { $match: { userId, date: { $gte: start } } },
+    { $group: {
+        _id: {
+          y: { $year: <span class="s">"$date"</span> }, m: { $month: <span class="s">"$date"</span> },
+          type: <span class="s">"$type"</span>,
+        },
+        total: { $sum: <span class="s">"$amount"</span> },
+    }},
+    { $group: {
+        _id: { y: <span class="s">"$_id.y"</span>, m: <span class="s">"$_id.m"</span> },
+        income:  { $sum: { $cond: [{ $eq: [<span class="s">"$_id.type"</span>, <span class="s">"income"</span>] }, <span class="s">"$total"</span>, <span class="n">0</span>] } },
+        expense: { $sum: { $cond: [{ $eq: [<span class="s">"$_id.type"</span>, <span class="s">"expense"</span>] }, <span class="s">"$total"</span>, <span class="n">0</span>] } },
+    }},
+    { $sort: { <span class="s">"_id.y"</span>: <span class="n">1</span>, <span class="s">"_id.m"</span>: <span class="n">1</span> } },
+  ]);
+}</pre>
+
+  <!-- ─── 7. Routes ─────────────────────────────────────── -->
+  <h2 id="routes"><span class="num">07</span>API Routes (App Router)</h2>
+  <p class="lead">Convenție: <code class="inline">/api/&lt;resource&gt;</code> pentru listă, <code class="inline">/api/&lt;resource&gt;/[id]</code> pentru item. JSON in, JSON out. Validare cu Zod, auth via session check.</p>
+
+  <table>
+    <tr><th>Metodă</th><th>Path</th><th>Rol</th></tr>
+    <tr><td><span class="tag green">GET</span></td><td><code class="inline">/api/transactions?period=2026-05&amp;cat=&amp;type=</code></td><td>Listă paginat</td></tr>
+    <tr><td><span class="tag blue">POST</span></td><td><code class="inline">/api/transactions</code></td><td>Creează tranzacție</td></tr>
+    <tr><td><span class="tag orange">PATCH</span></td><td><code class="inline">/api/transactions/[id]</code></td><td>Update</td></tr>
+    <tr><td><span class="tag" style="background:#FEE2E2;color:#991B1B">DEL</span></td><td><code class="inline">/api/transactions/[id]</code></td><td>Șterge</td></tr>
+    <tr><td><span class="tag green">GET</span></td><td><code class="inline">/api/budgets?period=2026-05</code></td><td>Bugetele lunii + consum</td></tr>
+    <tr><td><span class="tag blue">POST</span></td><td><code class="inline">/api/budgets</code></td><td>Setează buget pe categorie</td></tr>
+    <tr><td><span class="tag green">GET</span></td><td><code class="inline">/api/categories</code></td><td>Categoriile userului</td></tr>
+    <tr><td><span class="tag green">GET</span></td><td><code class="inline">/api/reports/monthly?period=2026-05</code></td><td>Donut + summary</td></tr>
+    <tr><td><span class="tag green">GET</span></td><td><code class="inline">/api/reports/timeline</code></td><td>6-month line</td></tr>
+    <tr><td><span class="tag green">GET</span></td><td><code class="inline">/api/export?format=csv</code></td><td>Export</td></tr>
+  </table>
+
+  <h3>Exemplu — POST /api/transactions</h3>
+<pre><span class="c">// app/api/transactions/route.ts</span>
+<span class="k">import</span> { NextResponse } <span class="k">from</span> <span class="s">"next/server"</span>;
+<span class="k">import</span> { auth } <span class="k">from</span> <span class="s">"@/lib/auth/config"</span>;
+<span class="k">import</span> { connectDB } <span class="k">from</span> <span class="s">"@/lib/db/connect"</span>;
+<span class="k">import</span> Transaction <span class="k">from</span> <span class="s">"@/lib/db/models/Transaction"</span>;
+<span class="k">import</span> { transactionSchema } <span class="k">from</span> <span class="s">"@/lib/validation/schemas"</span>;
+
+<span class="k">export async function</span> <span class="f">POST</span>(req: Request) {
+  <span class="k">const</span> session = <span class="k">await</span> auth();
+  <span class="k">if</span> (!session?.user) <span class="k">return</span> NextResponse.json({ error: <span class="s">"Unauthorized"</span> }, { status: <span class="n">401</span> });
+
+  <span class="k">const</span> body = <span class="k">await</span> req.json();
+  <span class="k">const</span> parsed = transactionSchema.safeParse(body);
+  <span class="k">if</span> (!parsed.success) {
+    <span class="k">return</span> NextResponse.json({ error: parsed.error.flatten() }, { status: <span class="n">400</span> });
+  }
+
+  <span class="k">await</span> connectDB();
+  <span class="k">const</span> tx = <span class="k">await</span> Transaction.create({
+    ...parsed.data,
+    userId: session.user.id,
+  });
+
+  <span class="k">return</span> NextResponse.json(tx, { status: <span class="n">201</span> });
+}
+
+<span class="k">export async function</span> <span class="f">GET</span>(req: Request) {
+  <span class="k">const</span> session = <span class="k">await</span> auth();
+  <span class="k">if</span> (!session?.user) <span class="k">return</span> NextResponse.json({ error: <span class="s">"Unauthorized"</span> }, { status: <span class="n">401</span> });
+
+  <span class="k">const</span> { searchParams } = <span class="k">new</span> URL(req.url);
+  <span class="k">const</span> period = searchParams.get(<span class="s">"period"</span>) ?? formatPeriod(<span class="k">new</span> Date());
+  <span class="k">const</span> { start, end } = monthRange(period);
+
+  <span class="k">await</span> connectDB();
+  <span class="k">const</span> txs = <span class="k">await</span> Transaction
+    .find({ userId: session.user.id, date: { $gte: start, $lt: end } })
+    .sort({ date: <span class="n">-1</span> })
+    .populate(<span class="s">"categoryId"</span>, <span class="s">"name icon color"</span>)
+    .lean();
+
+  <span class="k">return</span> NextResponse.json(txs);
+}</pre>
+
+  <!-- ─── 8. Auth ─────────────────────────────────────── -->
+  <h2 id="auth"><span class="num">08</span>Auth (NextAuth v5)</h2>
+<pre><span class="c">// lib/auth/config.ts</span>
+<span class="k">import</span> NextAuth <span class="k">from</span> <span class="s">"next-auth"</span>;
+<span class="k">import</span> Google <span class="k">from</span> <span class="s">"next-auth/providers/google"</span>;
+<span class="k">import</span> Resend <span class="k">from</span> <span class="s">"next-auth/providers/resend"</span>;
+<span class="k">import</span> { MongoDBAdapter } <span class="k">from</span> <span class="s">"@auth/mongodb-adapter"</span>;
+<span class="k">import</span> client <span class="k">from</span> <span class="s">"./mongo-client"</span>;
+
+<span class="k">export const</span> { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: MongoDBAdapter(client),
+  providers: [
+    Google,
+    Resend({ from: <span class="s">"hello@moneyflow.ro"</span> }),
+  ],
+  session: { strategy: <span class="s">"jwt"</span> },
+  callbacks: {
+    <span class="k">async</span> <span class="f">session</span>({ session, token }) {
+      <span class="k">if</span> (token.sub) session.user.id = token.sub;
+      <span class="k">return</span> session;
+    },
+  },
+  pages: { signIn: <span class="s">"/login"</span> },
+});</pre>
+
+<pre><span class="c">// middleware.ts — protejează (app)/*</span>
+<span class="k">export</span> { auth <span class="k">as</span> middleware } <span class="k">from</span> <span class="s">"@/lib/auth/config"</span>;
+<span class="k">export const</span> config = {
+  matcher: [<span class="s">"/((?!api/auth|login|register|_next|favicon).*)"</span>],
+};</pre>
+
+  <!-- ─── 9. Validation ─────────────────────────────────────── -->
+  <h2 id="validation"><span class="num">09</span>Validare cu Zod</h2>
+<pre><span class="c">// lib/validation/schemas.ts</span>
+<span class="k">import</span> { z } <span class="k">from</span> <span class="s">"zod"</span>;
+
+<span class="k">export const</span> transactionSchema = z.object({
+  type:       z.enum([<span class="s">"income"</span>, <span class="s">"expense"</span>]),
+  amount:     z.number().positive().max(<span class="n">1_000_000</span>),
+  categoryId: z.string().regex(/<span class="s">^[a-f\d]{24}$</span>/, <span class="s">"Invalid ObjectId"</span>),
+  merchant:   z.string().min(<span class="n">1</span>).max(<span class="n">120</span>),
+  note:       z.string().max(<span class="n">500</span>).optional(),
+  date:       z.coerce.date(),
+});
+
+<span class="k">export const</span> budgetSchema = z.object({
+  categoryId: z.string().regex(/<span class="s">^[a-f\d]{24}$</span>/),
+  amount:     z.number().positive().max(<span class="n">100_000</span>),
+  period:     z.string().regex(/<span class="s">^\d{4}-\d{2}$</span>/).nullable(),
+});
+
+<span class="k">export type</span> TransactionInput = z.infer&lt;<span class="k">typeof</span> transactionSchema&gt;;</pre>
+
+  <!-- ─── 10. Mapping ─────────────────────────────────────── -->
+  <h2 id="mapping"><span class="num">10</span>Prototip → Componente Next</h2>
+  <p class="lead">Mapping 1:1 de la fișierele JSX din prototip la componente Next.js. Reutilizezi 80% din JSX, schimbi doar data fetching.</p>
+
+  <table>
+    <tr><th>Prototip</th><th>Next.js</th><th>Note</th></tr>
+    <tr><td><code class="inline">screens/dashboard.jsx</code></td><td><code class="inline">app/(app)/dashboard/page.tsx</code></td><td>Server Component, fetch în <code class="inline">async</code> direct</td></tr>
+    <tr><td><code class="inline">screens/transactions.jsx</code></td><td><code class="inline">app/(app)/transactions/page.tsx</code> + <code class="inline">components/transactions/*</code></td><td>Client component pentru filter state</td></tr>
+    <tr><td><code class="inline">screens/budget.jsx</code></td><td><code class="inline">app/(app)/budget/page.tsx</code></td><td>Hybrid: server fetch + client edit</td></tr>
+    <tr><td><code class="inline">screens/reports.jsx</code></td><td><code class="inline">app/(app)/reports/page.tsx</code></td><td>Server pentru date, client pentru charts</td></tr>
+    <tr><td><code class="inline">screens/onboarding.jsx</code></td><td><code class="inline">app/(auth)/onboarding/page.tsx</code></td><td>Multi-step form cu RHF</td></tr>
+    <tr><td><code class="inline">screens/add-sheet.jsx</code></td><td><code class="inline">components/transactions/AddTransactionSheet.tsx</code></td><td>Vaul drawer, Zod-validated</td></tr>
+    <tr><td><code class="inline">charts.jsx</code></td><td><code class="inline">components/charts/*</code></td><td>1:1, SVG inline</td></tr>
+    <tr><td><code class="inline">data.js</code></td><td><code class="inline">scripts/seed.ts</code></td><td>Folosește pentru a popula DB la dev</td></tr>
+  </table>
+
+  <!-- ─── 11. Data Fetching ─────────────────────────────────────── -->
+  <h2 id="fetching"><span class="num">11</span>Data Fetching pattern</h2>
+  <p>Folosește Server Components pentru initial load, SWR pentru mutații:</p>
+<pre><span class="c">// app/(app)/dashboard/page.tsx — Server Component</span>
+<span class="k">import</span> { auth } <span class="k">from</span> <span class="s">"@/lib/auth/config"</span>;
+<span class="k">import</span> { getMonthSummary, getRecentTransactions } <span class="k">from</span> <span class="s">"@/lib/db/queries"</span>;
+<span class="k">import</span> { DashboardClient } <span class="k">from</span> <span class="s">"./client"</span>;
+
+<span class="k">export default async function</span> <span class="f">DashboardPage</span>() {
+  <span class="k">const</span> session = <span class="k">await</span> auth();
+  <span class="k">const</span> period  = formatPeriod(<span class="k">new</span> Date());
+
+  <span class="k">const</span> [summary, recent] = <span class="k">await</span> Promise.all([
+    getMonthSummary(session!.user.id, period),
+    getRecentTransactions(session!.user.id, <span class="n">5</span>),
+  ]);
+
+  <span class="k">return</span> &lt;DashboardClient initialSummary={summary} initialRecent={recent} /&gt;;
+}</pre>
+
+  <!-- ─── 12. Tokens ─────────────────────────────────────── -->
+  <h2 id="tokens"><span class="num">12</span>Design tokens</h2>
+  <p>Paleta din PRD, declarată o singură dată:</p>
+<pre><span class="c">/* styles/tokens.css */</span>
+:root {
+  <span class="c">/* Brand */</span>
+  --color-primary:      <span class="n">#2563EB</span>;  <span class="c">/* albastru viu */</span>
+  --color-primary-dark: <span class="n">#1A3C5E</span>;
+  --color-success:      <span class="n">#16A34A</span>;
+  --color-warning:      <span class="n">#EA580C</span>;
+  --color-danger:       <span class="n">#DC2626</span>;
+
+  <span class="c">/* Surfaces */</span>
+  --color-bg:           <span class="n">#F8FAFC</span>;
+  --color-card:         <span class="n">#FFFFFF</span>;
+  --color-border:       <span class="n">#F1F5F9</span>;
+
+  <span class="c">/* Text */</span>
+  --color-text:         <span class="n">#1A3C5E</span>;
+  --color-text-muted:   <span class="n">#64748B</span>;
+  --color-text-faint:   <span class="n">#94A3B8</span>;
+
+  <span class="c">/* Radii */</span>
+  --radius-sm:  <span class="n">8px</span>;
+  --radius-md:  <span class="n">12px</span>;
+  --radius-lg:  <span class="n">16px</span>;
+  --radius-xl:  <span class="n">22px</span>;
+
+  <span class="c">/* Shadows */</span>
+  --shadow-sm: <span class="n">0 1px 2px rgba(15,23,42,0.04)</span>;
+  --shadow-md: <span class="n">0 1px 2px rgba(15,23,42,0.03), 0 4px 14px rgba(15,23,42,0.05)</span>;
+}</pre>
+
+  <!-- ─── 13. Roadmap ─────────────────────────────────────── -->
+  <h2 id="roadmap"><span class="num">13</span>Roadmap pe sprinturi</h2>
+  <p class="lead">Pe fazele din PRD, mapate la sprinturi de 2 săptămâni:</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="label" style="color:var(--blue)">SPRINT 1 · S1-2</div>
+      <div class="name">Fundație</div>
+      <div class="desc">Setup Next + Mongoose, Auth, User & Category models, seed default categories, login flow.</div>
+    </div>
+    <div class="card">
+      <div class="label" style="color:var(--blue)">SPRINT 2 · S3-4</div>
+      <div class="name">Tranzacții CRUD</div>
+      <div class="desc">Transaction model, API routes, list page, Add sheet, filter & search.</div>
+    </div>
+    <div class="card">
+      <div class="label" style="color:var(--green)">SPRINT 3 · S5-6</div>
+      <div class="name">Dashboard & Bugete</div>
+      <div class="desc">Aggregation pipelines, Budget model, progress bars, alerts.</div>
+    </div>
+    <div class="card">
+      <div class="label" style="color:var(--green)">SPRINT 4 · S7-8</div>
+      <div class="name">Rapoarte</div>
+      <div class="desc">Donut + line charts, top-categories, monthly comparison, insights.</div>
+    </div>
+    <div class="card">
+      <div class="label" style="color:var(--orange)">SPRINT 5 · S9-10</div>
+      <div class="name">Polish & Onboarding</div>
+      <div class="desc">3-slide intro, initial setup form, animations, empty states, error states.</div>
+    </div>
+    <div class="card">
+      <div class="label" style="color:var(--orange)">SPRINT 6 · S11-12</div>
+      <div class="name">Export & Beta</div>
+      <div class="desc">CSV/PDF export, dark mode, settings, deploy la beta testers.</div>
+    </div>
+  </div>
+
+  <!-- ─── 14. Deploy ─────────────────────────────────────── -->
+  <h2 id="deploy"><span class="num">14</span>Deploy</h2>
+  <p class="lead">Recomandare: <b>Vercel</b> pentru Next.js + <b>MongoDB Atlas</b> pentru DB. Free tier amândouă pentru MVP.</p>
+
+  <ul class="bullets">
+    <li>Atlas: cluster M0 gratuit, region <code class="inline">eu-central-1</code> (latency RO).</li>
+    <li>Vercel: connect GitHub repo, env vars sus, deploy automat la push.</li>
+    <li>Setează <code class="inline">NEXTAUTH_URL</code> la domeniul prod.</li>
+    <li>Adaugă <code class="inline">IP whitelist 0.0.0.0/0</code> în Atlas (Vercel are IP-uri dinamice).</li>
+    <li>Activează <code class="inline">@vercel/analytics</code> + <code class="inline">@sentry/nextjs</code> de la început.</li>
+  </ul>
+
+  <div class="callout ok">
+    <div class="ico">✓</div>
+    <div class="body"><b>Gata de start.</b> Cu setup-ul ăsta, Sprint 1 (fundația) se face în ~1 săptămână de un dezvoltator senior. Restul curge natural din prototip + agregările definite mai sus.</div>
+  </div>
+
+  <div style="margin-top:60px; padding-top:24px; border-top:1px solid var(--line); display:flex; justify-content:space-between; font-size:11px; color:var(--mute); font-family:'JetBrains Mono', monospace;">
+    <div>MoneyFlow Tech Handoff · v1.0</div>
+    <div>2026 · Confidențial</div>
+  </div>
+</main>
+</div>
+</body>
+</html>
